@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL for the API
-const BASE_URL = "http://13.234.31.217"; // Replace with your server's base URL
+const BASE_URL = "https://ecoback.demo.shdpixel.com"; // Replace with your server's base URL
 
 // Create an Axios instance
 const API = axios.create({
