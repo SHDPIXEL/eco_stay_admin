@@ -95,7 +95,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchBookingChartData = async () => {
       const response = await API.get("admin/booking-details/graph");
-      const data = response.data;
+      const data = response.data.data;
       setBookingChartData(data);
     }
     fetchBookingChartData()
@@ -112,15 +112,6 @@ const Dashboard = () => {
 
   const COLORS = ["#0088FE", "#00C49F"];
 
-  const LinechartData = [
-    { date: "2023-12-01", bookings: 30 },
-    { date: "2023-12-02", bookings: 45 },
-    { date: "2023-12-03", bookings: 60 },
-    { date: "2023-12-04", bookings: 25 },
-    { date: "2023-12-05", bookings: 75 },
-    { date: "2023-12-06", bookings: 50 },
-    { date: "2023-12-07", bookings: 90 },
-  ];
 
   const DashboardItems = [
     { title: "Total Bookings", value: data || 0, icon: <Calendar className="w-5 h-5" /> },
@@ -155,7 +146,7 @@ const Dashboard = () => {
           <div className="h-80 flex flex-col items-center justify-center shadow-sm bg-white p-6 space-y-5">
             <ResponsiveContainer>
               <LineChart
-                data={LinechartData}
+                data={bookingChartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />

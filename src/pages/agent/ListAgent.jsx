@@ -14,34 +14,66 @@ const ListAgent = () => {
       try {
         const response = await API.get("/admin/agent");
         const Data = response.data;
+
+        // Log the raw data for debugging
+        // console.log("Raw agent data:", Data);
+
+        // Handle the idProof field safely
         const parsedData = Data.map(agent => ({
           ...agent,
-          idProof: agent.idProof ? JSON.parse(agent.idProof) : null
+          idProof: handleIdProof(agent.idProof),
         }));
+
         setAgentDetails(parsedData);
-        console.log("parsed Data",parsedData)
-        console.log("idProod", pars)
+        // console.log("Parsed agent data:", parsedData);
       } catch (e) {
         console.log("Error getting the agents", e);
       }
     };
+
     fetchAgent();
   }, []);
 
+  // Utility function to check if a string is valid JSON
+  const isValidJson = (str) => {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Function to handle the `idProof` field
+  const handleIdProof = (idProof) => {
+    // If `idProof` is already an object, return it as is
+    if (typeof idProof === "object" && idProof !== null) {
+      return idProof;
+    }
+    
+    // If `idProof` is a string that can be parsed as JSON, parse it
+    if (isValidJson(idProof)) {
+      return JSON.parse(idProof);
+    }
+
+    // Otherwise, return an empty string or any default value
+    return idProof || "";
+  };
+
   const deleteAgent = async (id) => {
-    try{
+    try {
       const confirmDelete = window.confirm("Are you sure you want to delete the Agent ?");
-      if(!confirmDelete) return;
+      if (!confirmDelete) return;
 
       const response = await API.delete(`/admin/agent/${id}`);
-      if(response.status === 200 || 201){
-        alert("Agent Deleted Successfully")
+      if (response.status === 200 || 201) {
+        alert("Agent Deleted Successfully");
       }
 
       setAgentDetails((prev) => prev.filter((item) => item.id !== id));
-    }catch(e){
+    } catch (e) {
       console.log("Error in deleting the agent record", e);
-      alert("Failed to delete the Agent")
+      alert("Failed to delete the Agent");
     }
   };
 
@@ -50,7 +82,7 @@ const ListAgent = () => {
       const confirmChangeStatus = window.confirm("Are you sure you want to change the status ?");
       if (!confirmChangeStatus) return;
 
-      const newStatus = row.status === "Active" ? "Inactive" : "Active"
+      const newStatus = row.status === "Active" ? "Inactive" : "Active";
 
       const response = await API.put(`/admin/agent/${row.id}`, {
         status: newStatus,
@@ -66,10 +98,9 @@ const ListAgent = () => {
       );
     } catch (e) {
       console.error("Error in changing the status", e);
-      alert("failed to change status")
+      alert("Failed to change status");
     }
   };
-
 
   const columns = [
     { header: "Name", accessor: "name" },
@@ -77,21 +108,10 @@ const ListAgent = () => {
     { header: "Phone", accessor: "phone" },
     { header: "Address", accessor: "address" },
     { header: "City", accessor: "city" },
-    { header: "state", accessor: "state" },
-    { header: "pincode", accessor: "pincode" },
-    { header: "country", accessor: "country" },
-
-    { 
-      header: "Id-proof", 
-      accessor: "idProof",
-      cell: (row) => {
-        const idProof = row.idProof;
-        if (!idProof) return "No ID Proof";
-        return Object.entries(idProof)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join(", ");
-      }
-    },
+    { header: "State", accessor: "state" },
+    { header: "Pincode", accessor: "pincode" },
+    { header: "Country", accessor: "country" },
+    { header: "Id-proof", accessor: "idProof" },
     { header: "Status", accessor: "status" },
     { header: "Offers", accessor: "offers" },
   ];

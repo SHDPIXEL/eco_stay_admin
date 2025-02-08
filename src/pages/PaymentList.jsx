@@ -1,34 +1,48 @@
 import Table from "../components/Table";
 import API from "../lib/utils";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 
 const PaymentList = () => {
-
   const [paymentDetails, SetpaymentDetails] = useState([]);
 
-  useEffect(() =>{
+  useEffect(() => {
     const fetchpaymentInfo = async () => {
-      try{
+      try {
         const response = await API.get("/admin/payment");
-        const data = response.data;
+        const data = response.data.payments;
+        console.log(data);
         SetpaymentDetails(data);
-
-      }catch(e){
-        console.log("Error in fetching Payment Info", e)
+      } catch (e) {
+        console.log("Error in fetching Payment Info", e);
       }
-    }
+    };
     fetchpaymentInfo();
-  },[])
-
+  }, []);
 
   const columns = [
     { header: "ID", accessor: "id" },
-    { header: "Book ID", accessor: "payid" },
-    { header: "Transaction Id", accessor: "transactionid" },
-    { header: "Method", accessor: "method" },
-    { header: "Status", accessor: "status" },
-    { header: "Time-stamp", accessor: "timestamp" },
+    { header: "Book ID", accessor: "bookingId" },
+    { header: "Transaction Id", accessor: "transactionId" },
+    // { header: "Method", accessor: "method" },
+    {
+      header: "Status",
+      accessor: "status",
+      Cell: ({ value }) => (
+        <span
+          className={`px-2 py-1 font-semibold ${
+            value?.toLowerCase() === "pending"
+              ? "text-red-500"
+              : value?.toLowerCase() === "success"
+              ? "text-green-500"
+              : "text-gray-500"
+          }`}
+        >
+          {value}
+        </span>
+      ),
+    },
+    { header: "Time-stamp", accessor: "createdAt" },
   ];
 
   // const data = [
@@ -73,13 +87,11 @@ const PaymentList = () => {
         <meta name="Payment List" content="Eco Stay Payment List!" />
       </Helmet>
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Payment List</h1>
-      {
-        paymentDetails.length > 0 ? (
-          <Table columns={columns} data={paymentDetails} />
-        ) : (
-          <div className="text-center text-gray-600 mt-10">No records found</div>
-        )
-      }
+      {paymentDetails.length > 0 ? (
+        <Table columns={columns} data={paymentDetails} />
+      ) : (
+        <div className="text-center text-gray-600 mt-10">No records found</div>
+      )}
     </div>
   );
 };
