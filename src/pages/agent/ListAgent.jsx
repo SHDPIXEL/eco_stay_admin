@@ -62,20 +62,42 @@ const ListAgent = () => {
 
   const deleteAgent = async (id) => {
     try {
-      const confirmDelete = window.confirm("Are you sure you want to delete the Agent ?");
+      const confirmDelete = window.confirm("Are you sure you want to delete the Agent?");
       if (!confirmDelete) return;
-
+  
       const response = await API.delete(`/admin/agent/${id}`);
-      if (response.status === 200 || 201) {
-        alert("Agent Deleted Successfully");
+  
+      // ✅ Check if the response has JSON data
+      let responseData;
+      try {
+        responseData = response.data; // Axios automatically parses JSON, no need for response.json()
+      } catch (error) {
+        console.warn("Response is not in JSON format");
+        responseData = null;
       }
-
-      setAgentDetails((prev) => prev.filter((item) => item.id !== id));
+  
+      // ✅ Ensure correct status checking (Fixes issue with `if (response.status === 200 || 201)`)
+      if (response.status === 200 || response.status === 201) {
+        alert("Agent Deleted Successfully");
+  
+        // ✅ Update state only if deletion is successful
+        setAgentDetails((prev) => prev.filter((item) => item.id !== id));
+      } else {
+        alert(responseData?.message || "Failed to delete the Agent");
+      }
     } catch (e) {
-      console.log("Error in deleting the agent record", e);
-      alert("Failed to delete the Agent");
+      console.error("Error in deleting the agent record", e);
+  
+      // ✅ Check if error response is JSON or plain text
+      const errorMessage =
+        e.response?.data?.message ||
+        e.response?.data ||
+        "Unexpected error occurred while deleting the agent.";
+  
+      alert(errorMessage);
     }
   };
+  
 
   const updateStatus = async (row) => {
     try {

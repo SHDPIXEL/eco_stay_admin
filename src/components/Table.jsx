@@ -125,7 +125,7 @@ const renderCellContent = (column, row) => {
 
     if (Array.isArray(value) && value.length > 0) {
       return (
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2 w-40">
           {value.map((image, index) => {
             const imageUrl = `${BASE_URL}/assets/images/${image}`;
             console.log("Generated room image URL:", imageUrl); // Debugging log
@@ -134,7 +134,7 @@ const renderCellContent = (column, row) => {
                 key={index}
                 src={imageUrl}
                 alt={`Room Image ${index + 1}`}
-                className="w-12 h-12 object-cover rounded-md border border-gray-200 hover:scale-105"
+                className="w-16 h-16 object-cover rounded-md border border-gray-200 hover:scale-105"
               />
             );
           })}

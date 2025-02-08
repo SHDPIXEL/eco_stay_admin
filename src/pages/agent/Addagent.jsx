@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { User, Mail, Phone, Home, FileText, CheckCircle, Tag } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  Home,
+  FileText,
+  CheckCircle,
+  Tag,
+} from "lucide-react";
 import { useLocation } from "react-router";
 import API from "../../lib/utils";
 import { useNavigate } from "react-router";
 import { Helmet } from "react-helmet-async";
 
 const AddAgent = () => {
-
   const location = useLocation();
   const agentData = location.state?.agentData;
   const navigate = useNavigate();
@@ -21,9 +28,9 @@ const AddAgent = () => {
     offers: "",
     password: "",
     city: "",
-    state:"",
+    state: "",
     country: "",
-    pincode: ""
+    pincode: "",
   });
 
   useEffect(() => {
@@ -41,14 +48,31 @@ const AddAgent = () => {
         state: agentData.state || "",
         country: agentData.country || "",
         pincode: agentData.pincode || "",
-
       });
     }
   }, [agentData]);
 
+  const [errors, setErrors] = useState({}); // State to store validation errors
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[6-9]\d{9}$/; // Validates a 10-digit number starting with 6, 7, 8, or 9
+    return phoneRegex.test(phone);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (name === "phone") {
+      if (!validatePhoneNumber(value)) {
+        setErrors((prevErrors) => ({ ...prevErrors, phone: "Invalid phone number" }));
+      } else {
+        setErrors((prevErrors) => {
+          const newErrors = { ...prevErrors };
+          delete newErrors.phone;
+          return newErrors;
+        });
+      }
+    }
   };
 
   // const handleOffersChange = (e) => {
@@ -68,9 +92,16 @@ const AddAgent = () => {
   //     offers: prev.offers.filter((offer) => offer !== offerToDelete),
   //   }));
   // };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Validate Phone Number
+    if (!validatePhoneNumber(formData.phone)) {
+      setErrors((prevErrors) => ({ ...prevErrors, phone: "Invalid phone number" }));
+      return;
+    }
   
     try {
       const token = localStorage.getItem("authToken");
@@ -94,7 +125,6 @@ const AddAgent = () => {
         formDataToSend.append("state", formData.state);
         formDataToSend.append("country", formData.country);
         formDataToSend.append("pincode", formData.pincode);
-
   
         if (formData.idProof && formData.idProof instanceof File) {
           formDataToSend.append("idProof", formData.idProof);
@@ -107,7 +137,7 @@ const AddAgent = () => {
           },
         });
   
-        if (response.status === 201 || 200) {
+        if (response.status === 201 || response.status === 200) {
           console.log("Agent updated successfully:", response.data);
           alert("Agent updated successfully");
           navigate("/agent/list");
@@ -142,8 +172,8 @@ const AddAgent = () => {
         formDataToSend.append("state", formData.state);
         formDataToSend.append("country", formData.country);
         formDataToSend.append("pincode", formData.pincode);
-
   
+        // Try creating a new agent
         const response = await API.post("/admin/agent", formDataToSend, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -159,15 +189,17 @@ const AddAgent = () => {
       }
     } catch (e) {
       console.error("Error in submitting agent:", e);
-      alert(e.response?.data?.message || "Error creating/updating agent. Please try again.");
+      alert(e.error)
     }
-  };  
+  };
+  
+  
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setFormData((prev) => ({ ...prev, idProof: file }));
   };
-
 
   return (
     <div className="p-6">
@@ -240,6 +272,7 @@ const AddAgent = () => {
             placeholder="Enter phone number"
             required
           />
+          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
         </div>
 
         {/* Address */}
@@ -329,7 +362,7 @@ const AddAgent = () => {
             className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
           >
             <CheckCircle className="h-4 w-4 text-gray-400" />
-          Country
+            Country
           </label>
           <input
             name="country"
@@ -341,8 +374,6 @@ const AddAgent = () => {
             required
           />
         </div>
-
-        
 
         {/* ID Proof */}
         <div className="flex flex-col">
@@ -361,7 +392,6 @@ const AddAgent = () => {
             onChange={handleFileChange}
             className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
           />
-
         </div>
 
         {/* Status */}
@@ -381,7 +411,9 @@ const AddAgent = () => {
             className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm appearance-none transition-all duration-200"
             required
           >
-            <option value="" disabled>Select status</option>
+            <option value="" disabled>
+              Select status
+            </option>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
@@ -406,7 +438,6 @@ const AddAgent = () => {
             required
           />
         </div>
-
 
         {/* <div className="flex flex-col">
           <label
@@ -464,7 +495,8 @@ const AddAgent = () => {
         <div className="pt-6 border-t border-gray-200">
           <button
             type="submit"
-            className="w-full px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm">
+            className="w-full px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm"
+          >
             {agentData ? "Update Agent" : "Add Agent"}
           </button>
         </div>
