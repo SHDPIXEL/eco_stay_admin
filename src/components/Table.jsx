@@ -24,7 +24,7 @@ const Table = ({ columns, data, globalActions }) => {
 
         {/* Table Body */}
         <tbody>
-          {data.map((row, rowIndex) => (
+          {[...data].reverse().map((row, rowIndex) => (
             <tr
               key={rowIndex}
               className={`hover:bg-gray-50 ${

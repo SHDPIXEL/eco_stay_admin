@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Package, Tag, Image, Home, Type, PersonStanding, BadgeIndianRupee, Album, Rows3 } from "lucide-react";
+import {
+  Package,
+  Tag,
+  Image,
+  Home,
+  Type,
+  PersonStanding,
+  BadgeIndianRupee,
+  Album,
+  Rows3,
+} from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 import API from "../../lib/utils";
 import { Clock } from "lucide-react";
@@ -24,8 +34,8 @@ const AddType = () => {
     room_images: "",
     status: {
       available: 0,
-      booked: 0
-    }
+      booked: 0,
+    },
   });
 
   const [packages, setPackage] = useState([]);
@@ -51,7 +61,10 @@ const AddType = () => {
         setPackage(formattedPackages);
         console.log("Packages fetched successfully:", formattedPackages);
       } catch (error) {
-        console.error("Error fetching packages:", error.response?.data || error.message);
+        console.error(
+          "Error fetching packages:",
+          error.response?.data || error.message
+        );
       }
     };
     fetchPackages();
@@ -59,34 +72,35 @@ const AddType = () => {
 
   useEffect(() => {
     if (roomData) {
-      // console.log(typeof JSON.parse(roomData.room_images))
+      console.log("exisitng image", roomData.room_images);
       setFormData({
         room_name: roomData.room_name || "",
         type: roomData.type || "",
-        capacity: 1 || "",
+        capacity: roomData.capacity || 1,
         single_base_price: roomData.single_base_price || "",
         double_base_price: roomData.double_base_price || "",
         single_new_price: roomData.single_new_price || "",
         double_new_price: roomData.double_new_price || "",
-        package_ids: Array.isArray(roomData.package_ids) ? roomData.package_ids : [],
+        package_ids: Array.isArray(roomData.package_ids)
+          ? roomData.package_ids
+          : [],
         description: roomData.description || "",
-        amenities: JSON.parse(roomData.amenities) || "",
+        amenities: JSON.parse(roomData.amenities) || [],
         room_images: (() => {
           try {
-            return roomData.room_images ? JSON.parse(roomData.room_images) : "";
+            return roomData.room_images ? JSON.parse(roomData.room_images) : [];
           } catch (error) {
             console.error("Error parsing room_images:", error);
-            return ""; // Fallback in case of error
+            return [];
           }
         })(),
         status: {
-          available: JSON.parse(roomData.status).available || 0,
-          booked: JSON.parse(roomData.status).booked || 0,
+          available: JSON.parse(roomData.status)?.available || 0,
+          booked: JSON.parse(roomData.status)?.booked || 0,
         },
       });
     }
   }, [roomData]);
-
 
   const handlePackageSelect = (e) => {
     const { value } = e.target;
@@ -106,20 +120,20 @@ const AddType = () => {
     }));
   };
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-
   const handleTagsChange = (e) => {
     const { value } = e.target;
 
-    if ((e.key === "Enter" || e.keyCode === 13 || e.code === "Enter") && value.trim()) {
+    if (
+      (e.key === "Enter" || e.keyCode === 13 || e.code === "Enter") &&
+      value.trim()
+    ) {
       e.preventDefault();
       addTag(value.trim());
-
     }
   };
 
@@ -136,10 +150,8 @@ const AddType = () => {
       amenities: [...prev.amenities, tag],
     }));
 
-    document.getElementById("tags").value = '';
+    document.getElementById("tags").value = "";
   };
-
-
 
   const handleDeleteTag = (indexToDelete) => {
     setFormData((prev) => ({
@@ -147,7 +159,6 @@ const AddType = () => {
       amenities: prev.amenities.filter((_, index) => index !== indexToDelete),
     }));
   };
-
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -171,20 +182,20 @@ const AddType = () => {
   const handleDeleteImage = (indexToDelete) => {
     setFormData((prev) => ({
       ...prev,
-      room_images: prev.room_images.filter((_, index) => index !== indexToDelete),
+      room_images: prev.room_images.filter(
+        (_, index) => index !== indexToDelete
+      ),
     }));
   };
 
-
-
   const handleCottageChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       status: {
         ...prev.status,
-        [name]: parseInt(value) || 0
-      }
+        [name]: parseInt(value) || 0,
+      },
     }));
   };
 
@@ -193,6 +204,23 @@ const AddType = () => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Authorization token is missing");
+
+      // Convert values to float for comparison
+      const singleBasePrice = parseFloat(formData.single_base_price);
+      const singleNewPrice = parseFloat(formData.single_new_price);
+      const doubleBasePrice = parseFloat(formData.double_base_price);
+      const doubleNewPrice = parseFloat(formData.double_new_price);
+
+      // Validation check
+      if (singleBasePrice >= singleNewPrice) {
+        alert("Single base price must be smaller than single new price.");
+        return;
+      }
+
+      if (doubleBasePrice >= doubleNewPrice) {
+        alert("Double base price must be smaller than double new price.");
+        return;
+      }
 
       const formDataToSend = new FormData();
 
@@ -206,36 +234,35 @@ const AddType = () => {
           room_name: formData.room_name,
           type: formData.type,
           capacity: 1,
-          single_base_price: parseFloat(formData.single_base_price),
-          double_base_price: parseFloat(formData.double_base_price),
-          single_new_price: parseFloat(formData.single_new_price),
-          double_new_price: parseFloat(formData.double_new_price),
+          single_base_price: singleBasePrice,
+          single_new_price: singleNewPrice,
+          double_base_price: doubleBasePrice,
+          double_new_price: doubleNewPrice,
           description: formData.description,
           package_ids: formData.package_ids,
           amenities: formData.amenities,
           status: JSON.stringify({
             available: formData.status.available,
-            booked: formData.status.booked
-          })
+            booked: formData.status.booked,
+          }),
+          room_images: formData.room_images.filter((img) => !img.file), // Keep only existing images
         };
 
-        formDataToSend.append('room_data', JSON.stringify(updateData));
+        formDataToSend.append("room_data", JSON.stringify(updateData));
 
-        console.log(formDataToSend.room_images)
-        if (formData.room_images && formData.room_images.length > 0) {
-          formData.room_images.forEach((image) => {
-            if (image.file) {
-              formDataToSend.append("room_images", image.file);
-            }
-          });
-        }
+        console.log("sdssd", formDataToSend.room_images);
+        formData.room_images.forEach((image) => {
+          if (image.file) {
+            formDataToSend.append("room_images", image.file);
+          }
+        });
 
-        console.log("Room data to send", formDataToSend)
+        console.log("Room data to send", formDataToSend);
         const response = await API.put(`/admin/room/${id}`, formDataToSend, {
           headers: {
             Authorization: token,
-            'Content-Type': 'multipart/form-data'
-          }
+            "Content-Type": "multipart/form-data",
+          },
         });
 
         if (response.status === 200) {
@@ -243,7 +270,15 @@ const AddType = () => {
           navigate("/roomtype/list");
         }
       } else {
-        if (!formData.room_name || !formData.type || !formData.capacity || !formData.single_base_price || !formData.double_base_price || !formData.single_new_price || !formData.double_new_price) {
+        if (
+          !formData.room_name ||
+          !formData.type ||
+          !formData.capacity ||
+          !formData.single_base_price ||
+          !formData.double_base_price ||
+          !formData.single_new_price ||
+          !formData.double_new_price
+        ) {
           throw new Error("Please fill in all required fields");
         }
 
@@ -252,22 +287,22 @@ const AddType = () => {
             room_name: formData.room_name,
             type: formData.type,
             capacity: parseInt(formData.capacity),
-            single_base_price: parseFloat(formData.single_base_price),
-            double_base_price: parseFloat(formData.double_base_price),
-            single_new_price: parseFloat(formData.single_new_price),
-            double_new_price: parseFloat(formData.double_base_price),
+            single_base_price: singleBasePrice,
+            single_new_price: singleNewPrice,
+            double_base_price: doubleBasePrice,
+            double_new_price: doubleNewPrice,
             description: formData.description,
             package_ids: formData.package_ids,
             amenities: formData.amenities,
             status: {
               available: formData.status.available,
-              booked: formData.status.booked
-            }
-          }
+              booked: formData.status.booked,
+            },
+          },
         ];
 
         // Append the array as JSON
-        formDataToSend.append('room_data', JSON.stringify(roomDataArray));
+        formDataToSend.append("room_data", JSON.stringify(roomDataArray));
 
         if (formData.room_images && formData.room_images.length > 0) {
           formData.room_images.forEach((image) => {
@@ -279,9 +314,9 @@ const AddType = () => {
 
         const response = await API.post("/admin/room", formDataToSend, {
           headers: {
-            'Authorization': token,
-            'Content-Type': 'multipart/form-data',
-          }
+            Authorization: token,
+            "Content-Type": "multipart/form-data",
+          },
         });
 
         if (response.status === 200 || response.status === 201) {
@@ -292,10 +327,12 @@ const AddType = () => {
     } catch (error) {
       console.error("Error submitting room:", error);
       console.error("Error details:", error.response?.data);
-      alert(error.response?.data?.message || "Error processing room. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "Error processing room. Please try again."
+      );
     }
   };
-
 
   return (
     <div className="p-6">
@@ -306,10 +343,7 @@ const AddType = () => {
       <h1 className="text-2xl font-bold mb-4 text-gray-800">
         {roomData ? "Edit Room" : "Add New Room"}
       </h1>
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 max-w-2xl mx-auto"
-      >
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
         {/* Room Name */}
         <div className="flex flex-col">
           <label
@@ -454,7 +488,10 @@ const AddType = () => {
 
         {/* Package ID */}
         <div className="flex flex-col">
-          <label htmlFor="package_ids" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+          <label
+            htmlFor="package_ids"
+            className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+          >
             <Album className="h-4 w-4 text-gray-400" />
             Package IDs
           </label>
@@ -472,9 +509,10 @@ const AddType = () => {
           </select>
 
           <div className="flex flex-wrap gap-2 mt-3">
-
             {formData.package_ids.map((id, index) => {
-              const packageName = packages.find((p) => p.id === id)?.pack_name || "Unknown Package";
+              const packageName =
+                packages.find((p) => p.id === id)?.pack_name ||
+                "Unknown Package";
               return (
                 <span
                   key={index}
@@ -492,7 +530,6 @@ const AddType = () => {
               );
             })}
           </div>
-
         </div>
 
         {/* Description */}
@@ -549,10 +586,8 @@ const AddType = () => {
               className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
               placeholder="Add tags (press Enter to add)"
             />
-
           </div>
         </div>
-
 
         <div className="flex flex-col">
           <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -561,7 +596,9 @@ const AddType = () => {
           </label>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="available" className="text-sm text-gray-600">Available</label>
+              <label htmlFor="available" className="text-sm text-gray-600">
+                Available
+              </label>
               <input
                 type="number"
                 name="available"
@@ -571,12 +608,12 @@ const AddType = () => {
                 onChange={handleCottageChange}
                 className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
                 required
-
               />
-
             </div>
             <div>
-              <label htmlFor="booked" className="text-sm text-gray-600">Booked</label>
+              <label htmlFor="booked" className="text-sm text-gray-600">
+                Booked
+              </label>
               <input
                 type="number"
                 name="booked"
@@ -599,6 +636,11 @@ const AddType = () => {
           >
             <Image className="h-4 w-4 text-gray-400" />
             Room Images
+            {roomData && (
+              <span className="text-gray-500 text-xs italic">
+                (Upload a new image only if you wish to update, else the existing ones will be retained)
+              </span>
+            )}
           </label>
           <input
             type="file"
@@ -607,7 +649,7 @@ const AddType = () => {
             accept="image/*"
             onChange={handleImageChange}
             className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
-            required
+            required={roomData ? false : true}
             multiple
           />
 
@@ -631,8 +673,6 @@ const AddType = () => {
               ))}
             </div>
           )}
-
-
         </div>
 
         {/* Submit Button */}
