@@ -33,8 +33,8 @@ const AddType = () => {
     amenities: [],
     room_images: "",
     status: {
-      available: 0,
-      booked: 0,
+      available: "",
+      booked: "",
     },
   });
 
@@ -412,7 +412,7 @@ const AddType = () => {
             className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
           >
             <BadgeIndianRupee className="h-4 w-4 text-gray-400" />
-            Single Occupancy Price(INR)
+            Old Single Occupancy Price(INR)
           </label>
           <input
             type="number"
@@ -432,7 +432,7 @@ const AddType = () => {
             className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
           >
             <BadgeIndianRupee className="h-4 w-4 text-gray-400" />
-            Single Occupancy Price New(INR)
+            Offer Single Occupancy Price New(INR)
           </label>
           <input
             type="number"
@@ -452,7 +452,7 @@ const AddType = () => {
             className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
           >
             <BadgeIndianRupee className="h-4 w-4 text-gray-400" />
-            Double Occupancy Price(INR)
+            Old Double Occupancy Price(INR)
           </label>
           <input
             type="number"
@@ -472,7 +472,7 @@ const AddType = () => {
             className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
           >
             <BadgeIndianRupee className="h-4 w-4 text-gray-400" />
-            Double Occupancy Price New(INR)
+            Offer Double Occupancy Price New(INR)
           </label>
           <input
             type="number"
@@ -638,7 +638,8 @@ const AddType = () => {
             Room Images
             {roomData && (
               <span className="text-gray-500 text-xs italic">
-                (Upload a new image only if you wish to update, else the existing ones will be retained)
+                (Upload a new image only if you wish to update, else the
+                existing ones will be retained)
               </span>
             )}
           </label>
