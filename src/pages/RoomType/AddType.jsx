@@ -14,6 +14,7 @@ import { useLocation, useNavigate } from "react-router";
 import API from "../../lib/utils";
 import { Clock } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { formatDate } from "date-fns";
 
 const AddType = () => {
   const location = useLocation();
@@ -26,8 +27,10 @@ const AddType = () => {
     capacity: "",
     single_base_price: "",
     double_base_price: "",
+    triple_base_price: "",
     single_new_price: "",
     double_new_price: "",
+    triple_new_price: "",
     package_ids: [],
     description: "",
     amenities: [],
@@ -79,8 +82,10 @@ const AddType = () => {
         capacity: roomData.capacity || 1,
         single_base_price: roomData.single_base_price || "",
         double_base_price: roomData.double_base_price || "",
+        triple_base_price: roomData.triple_base_price || "",
         single_new_price: roomData.single_new_price || "",
         double_new_price: roomData.double_new_price || "",
+        triple_new_price: roomData.triple_new_price || "",
         package_ids: Array.isArray(roomData.package_ids)
           ? roomData.package_ids
           : [],
@@ -210,6 +215,8 @@ const AddType = () => {
       const singleNewPrice = parseFloat(formData.single_new_price);
       const doubleBasePrice = parseFloat(formData.double_base_price);
       const doubleNewPrice = parseFloat(formData.double_new_price);
+      const tripleBasePrice = parseFloat(formData.triple_base_price);
+      const tripleNewPrice = parseFloat(formData.triple_new_price);
 
       // Validation check
       if (singleBasePrice >= singleNewPrice) {
@@ -221,6 +228,12 @@ const AddType = () => {
         alert("Double base price must be smaller than double new price.");
         return;
       }
+
+      if (tripleBasePrice >= tripleNewPrice) {
+        alert("Triple base price must be smaller than Triple new price.");
+        return;
+      }
+
 
       const formDataToSend = new FormData();
 
@@ -238,6 +251,8 @@ const AddType = () => {
           single_new_price: singleNewPrice,
           double_base_price: doubleBasePrice,
           double_new_price: doubleNewPrice,
+          triple_base_price: tripleBasePrice,
+          triple_new_price: tripleNewPrice,
           description: formData.description,
           package_ids: formData.package_ids,
           amenities: formData.amenities,
@@ -277,7 +292,9 @@ const AddType = () => {
           !formData.single_base_price ||
           !formData.double_base_price ||
           !formData.single_new_price ||
-          !formData.double_new_price
+          !formData.double_new_price ||
+          !formData.triple_base_price ||
+          !formData.triple_new_price
         ) {
           throw new Error("Please fill in all required fields");
         }
@@ -291,6 +308,8 @@ const AddType = () => {
             single_new_price: singleNewPrice,
             double_base_price: doubleBasePrice,
             double_new_price: doubleNewPrice,
+            triple_base_price: tripleBasePrice,
+            triple_new_price: tripleNewPrice,
             description: formData.description,
             package_ids: formData.package_ids,
             amenities: formData.amenities,
@@ -319,6 +338,8 @@ const AddType = () => {
           },
         });
 
+        console.log("form data to send", formDataToSend)
+
         if (response.status === 200 || response.status === 201) {
           console.log("Room added successfully:", response.data);
           navigate("/roomtype/list");
@@ -329,7 +350,7 @@ const AddType = () => {
       console.error("Error details:", error.response?.data);
       alert(
         error.response?.data?.message ||
-          "Error processing room. Please try again."
+        "Error processing room. Please try again."
       );
     }
   };
@@ -479,6 +500,47 @@ const AddType = () => {
             name="double_new_price"
             id="double_new_price"
             value={formData.double_new_price}
+            onChange={handleChange}
+            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
+            placeholder="Enter base price"
+            required
+          />
+        </div>
+
+
+        <div className="flex flex-col">
+          <label
+            htmlFor="triple_base_price"
+            className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+          >
+            <BadgeIndianRupee className="h-4 w-4 text-gray-400" />
+            Old Triple Occupancy Price(INR)
+          </label>
+          <input
+            type="number"
+            name="triple_base_price"
+            id="triple_base_price"
+            value={formData.triple_base_price}
+            onChange={handleChange}
+            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
+            placeholder="Enter base price"
+            required
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label
+            htmlFor="triple_new_price"
+            className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
+          >
+            <BadgeIndianRupee className="h-4 w-4 text-gray-400" />
+            Offer Triple Occupancy Price New(INR)
+          </label>
+          <input
+            type="number"
+            name="triple_new_price"
+            id="triple_new_price"
+            value={formData.triple_new_price}
             onChange={handleChange}
             className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
             placeholder="Enter base price"

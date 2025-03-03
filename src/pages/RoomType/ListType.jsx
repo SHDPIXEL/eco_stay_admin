@@ -59,6 +59,8 @@ const ListType = () => {
     { header: "Offer single occupancy price(INR)", accessor: "single_new_price" },
     { header: "Old Double occupancy price(INR)", accessor: "double_base_price" },
     { header: "Offer Double occupancy price(INR)", accessor: "double_new_price" },
+    { header: "Offer Triple occupancy price(INR)", accessor: "triple_base_price" },
+    { header: "Offer Triple occupancy price(INR)", accessor: "triple_new_price" },
     { header: "Tags", accessor: "amenities_show" },
     { header: "Rooms status", accessor: "status_show" },
   ];
