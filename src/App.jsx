@@ -13,6 +13,8 @@ import ListAgent from './pages/agent/ListAgent';
 import PaymentList from './pages/PaymentList';
 import AddNonAvailability from './pages/nonavailability/Add';
 import ListNonAvailability from './pages/nonavailability/List';
+import AddAvailability from './pages/roomStatus/addRoomStatus';
+import ListAvailabilty from "./pages/roomStatus/listRoomStatus";
 import InquiryList from './pages/InquiryList';
 import ProtectedRoute from './helper/ProtectedRoute';
 import { HelmetProvider } from 'react-helmet-async';
@@ -66,6 +68,8 @@ function App() {
           <Route path="paymentlist" element={<PaymentList />} />
           <Route path="nonavailability/list" element={<ListNonAvailability />} />
           <Route path="nonavailability/add" element={<AddNonAvailability />} />
+          <Route path="availability/add" element={<AddAvailability />} />
+          <Route path="availability/list" element={<ListAvailabilty />} />
           <Route path="inquirylist" element={<InquiryList />} />
         </Route>
         <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />

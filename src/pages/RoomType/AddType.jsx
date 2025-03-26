@@ -35,10 +35,7 @@ const AddType = () => {
     description: "",
     amenities: [],
     room_images: "",
-    status: {
-      available: "",
-      booked: "",
-    },
+    status: "Inactive", // Default to "Inactive"
   });
 
   const [packages, setPackage] = useState([]);
@@ -99,10 +96,7 @@ const AddType = () => {
             return [];
           }
         })(),
-        status: {
-          available: JSON.parse(roomData.status)?.available || 0,
-          booked: JSON.parse(roomData.status)?.booked || 0,
-        },
+        status: roomData.status || "Inactive", // Now directly sets "Active" or "Inactive"
       });
     }
   }, [roomData]);
@@ -193,16 +187,16 @@ const AddType = () => {
     }));
   };
 
-  const handleCottageChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      status: {
-        ...prev.status,
-        [name]: parseInt(value) || 0,
-      },
-    }));
-  };
+  // const handleCottageChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     status: {
+  //       ...prev.status,
+  //       [name]: parseInt(value) || 0,
+  //     },
+  //   }));
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -234,7 +228,6 @@ const AddType = () => {
         return;
       }
 
-
       const formDataToSend = new FormData();
 
       if (roomData) {
@@ -256,10 +249,7 @@ const AddType = () => {
           description: formData.description,
           package_ids: formData.package_ids,
           amenities: formData.amenities,
-          status: JSON.stringify({
-            available: formData.status.available,
-            booked: formData.status.booked,
-          }),
+          status: formData.status, // Directly storing "Active" or "Inactive"
           room_images: formData.room_images.filter((img) => !img.file), // Keep only existing images
         };
 
@@ -313,10 +303,7 @@ const AddType = () => {
             description: formData.description,
             package_ids: formData.package_ids,
             amenities: formData.amenities,
-            status: {
-              available: formData.status.available,
-              booked: formData.status.booked,
-            },
+            status: formData.status,
           },
         ];
 
@@ -338,7 +325,7 @@ const AddType = () => {
           },
         });
 
-        console.log("form data to send", formDataToSend)
+        console.log("form data to send", formDataToSend);
 
         if (response.status === 200 || response.status === 201) {
           console.log("Room added successfully:", response.data);
@@ -350,7 +337,7 @@ const AddType = () => {
       console.error("Error details:", error.response?.data);
       alert(
         error.response?.data?.message ||
-        "Error processing room. Please try again."
+          "Error processing room. Please try again."
       );
     }
   };
@@ -507,7 +494,6 @@ const AddType = () => {
           />
         </div>
 
-
         <div className="flex flex-col">
           <label
             htmlFor="triple_base_price"
@@ -654,40 +640,22 @@ const AddType = () => {
         <div className="flex flex-col">
           <label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
             <Package className="h-4 w-4 text-gray-400" />
-            Cottages Status
+            Room Status
           </label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="available" className="text-sm text-gray-600">
-                Available
-              </label>
-              <input
-                type="number"
-                name="available"
-                id="available"
-                min="1"
-                value={formData.status.available}
-                onChange={handleCottageChange}
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="booked" className="text-sm text-gray-600">
-                Booked
-              </label>
-              <input
-                type="number"
-                name="booked"
-                id="booked"
-                min="1"
-                value={formData.status.booked}
-                onChange={handleCottageChange}
-                className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
-                required
-              />
-            </div>
-          </div>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                status: e.target.value,
+              }))
+            }
+            className="w-full p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
+          >
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
         </div>
 
         {/* Room Images */}

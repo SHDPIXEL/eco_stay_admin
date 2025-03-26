@@ -68,6 +68,15 @@ const Sidebar = ({ setIsAuthenticated }) => {
         { path: '/nonavailability/add', name: 'Add Non-Availability', icon: Plus },
       ],
     },
+    {
+      name: 'Room Availability',
+      icon: UserX,
+      type: 'submenu',
+      submenuItems: [
+        { path: '/availability/list', name: 'Available Rooms List', icon: Rows3 },
+        { path: '/availability/add', name: 'Add Availability', icon: Plus },
+      ],
+    },
     { path: '/PaymentList', name: 'Payment Info', icon: Banknote, type: 'link' },
     { path: '/inquirylist', name: 'Inquiry', icon: MessageSquareHeart, type: 'link' },
   ];

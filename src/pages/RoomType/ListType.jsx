@@ -13,6 +13,7 @@ const ListType = () => {
     const fetchData = async () => {
       try {
         const response = await API.get("/admin/room");
+        console.log("data",response.data)
         const parseResponse = response.data;
 
         const formattedResponse = parseResponse.map((room) => ({
@@ -20,9 +21,6 @@ const ListType = () => {
           room_images: JSON.parse(room.room_images),
           package_ids: JSON.parse(room.package_ids),
           amenities_show: JSON.parse(room.amenities).join(", "),
-          status_show: `available: ${
-            JSON.parse(room.status).available
-          }, booked: ${JSON.parse(room.status).booked}`, // Format the status as a string
         }));
 
         setRoomDetails(formattedResponse);
@@ -62,7 +60,7 @@ const ListType = () => {
     { header: "Offer Triple occupancy price(INR)", accessor: "triple_base_price" },
     { header: "Offer Triple occupancy price(INR)", accessor: "triple_new_price" },
     { header: "Tags", accessor: "amenities_show" },
-    { header: "Rooms status", accessor: "status_show" },
+    { header: "Rooms status", accessor: "status" },
   ];
 
   const actions = [

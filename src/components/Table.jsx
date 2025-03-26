@@ -72,6 +72,75 @@ const renderCellContent = (column, row) => {
     // console.log("Value of idProof column:", value);
   }
 
+  if (column.accessor === "Room.room_name") {
+    return <span>{row.Room?.room_name || "N/A"}</span>;
+  }
+
+  if (column.accessor === "Room.type") {
+    return <span>{row.Room?.type || "N/A"}</span>;
+  }
+
+  if (column.accessor === "date") {
+    try {
+      const formattedDate = new Date(row.date).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      return <span>{formattedDate || "N/A"}</span>;
+    } catch (error) {
+      console.error("Error formatting date:", error, row.date);
+      return <span>N/A</span>;
+    }
+  }
+
+  if (column.accessor === "status.available") {
+    try {
+      let status = row.status;
+      console.log("Raw status:", status); // Debugging log
+
+      // If status is an object, return the value directly
+      if (typeof status === "object") {
+        return status?.available ?? "N/A";
+      }
+
+      // If status is a string but not JSON, use regex
+      if (typeof status === "string" && !status.startsWith("{")) {
+        const availableMatch = status.match(/Available:\s*(\d+)/i);
+        return availableMatch ? availableMatch[1] : "N/A";
+      }
+
+      // Otherwise, parse JSON string
+      status = JSON.parse(status);
+      return status?.available ?? "N/A";
+    } catch (error) {
+      console.error("Error parsing status:", error, row.status);
+      return "N/A";
+    }
+  }
+
+  if (column.accessor === "status.booked") {
+    try {
+      let status = row.status;
+      console.log("Raw status:", status); // Debugging log
+
+      if (typeof status === "object") {
+        return status?.booked ?? "N/A";
+      }
+
+      if (typeof status === "string" && !status.startsWith("{")) {
+        const bookedMatch = status.match(/Booked:\s*(\d+)/i);
+        return bookedMatch ? bookedMatch[1] : "N/A";
+      }
+
+      status = JSON.parse(status);
+      return status?.booked ?? "N/A";
+    } catch (error) {
+      console.error("Error parsing status:", error, row.status);
+      return "N/A";
+    }
+  }
+
   // Handle 'BookedBy' column logic for user_Id and agentId
   if (column.accessor === "BookedBy") {
     const { user_Id, agentId } = row;
@@ -92,7 +161,8 @@ const renderCellContent = (column, row) => {
         className={`font-medium ${
           value.toLowerCase() === "pending"
             ? "text-red-500"
-            : value.toLowerCase() === "confirmed" || value?.toLowerCase() === "success"
+            : value.toLowerCase() === "confirmed" ||
+              value?.toLowerCase() === "success"
             ? "text-green-500"
             : "text-gray-500"
         }`}
@@ -148,14 +218,14 @@ const renderCellContent = (column, row) => {
   if (column.accessor === "idProof" && value) {
     // console.log("idProof value:", value);
     const imageUrl = `${BASE_URL}/assets/images/${value}`;
-      return (
-              <img
-                key="1"
-                src={imageUrl}
-                alt={`IdProof Image`}
-                className="w-12 h-12 object-cover rounded-md border border-gray-200 hover:scale-105"
-              />
-            );
+    return (
+      <img
+        key="1"
+        src={imageUrl}
+        alt={`IdProof Image`}
+        className="w-12 h-12 object-cover rounded-md border border-gray-200 hover:scale-105"
+      />
+    );
   }
 
   // Handle descriptions
