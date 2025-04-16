@@ -64,7 +64,10 @@ const AddAgent = () => {
     setFormData({ ...formData, [name]: value });
     if (name === "phone") {
       if (!validatePhoneNumber(value)) {
-        setErrors((prevErrors) => ({ ...prevErrors, phone: "Invalid phone number" }));
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          phone: "Invalid phone number",
+        }));
       } else {
         setErrors((prevErrors) => {
           const newErrors = { ...prevErrors };
@@ -92,28 +95,30 @@ const AddAgent = () => {
   //     offers: prev.offers.filter((offer) => offer !== offerToDelete),
   //   }));
   // };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Validate Phone Number
     if (!validatePhoneNumber(formData.phone)) {
-      setErrors((prevErrors) => ({ ...prevErrors, phone: "Invalid phone number" }));
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        phone: "Invalid phone number",
+      }));
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Authorization token is missing");
-  
+
       const formDataToSend = new FormData();
       const isUpdating = Boolean(agentData);
-  
+
       if (isUpdating) {
         const { id } = agentData;
         if (!id) throw new Error("Agent ID is missing");
-  
+
         formDataToSend.append("name", formData.name);
         formDataToSend.append("email", formData.email);
         formDataToSend.append("phone", formData.phone);
@@ -125,18 +130,18 @@ const AddAgent = () => {
         formDataToSend.append("state", formData.state);
         formDataToSend.append("country", formData.country);
         formDataToSend.append("pincode", formData.pincode);
-  
+
         if (formData.idProof && formData.idProof instanceof File) {
           formDataToSend.append("idProof", formData.idProof);
         }
-  
+
         const response = await API.put(`/admin/agent/${id}`, formDataToSend, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         });
-  
+
         if (response.status === 201 || response.status === 200) {
           console.log("Agent updated successfully:", response.data);
           alert("Agent updated successfully");
@@ -159,7 +164,7 @@ const AddAgent = () => {
         ) {
           throw new Error("Please fill in all required fields");
         }
-  
+
         formDataToSend.append("name", formData.name);
         formDataToSend.append("email", formData.email);
         formDataToSend.append("phone", formData.phone);
@@ -172,7 +177,7 @@ const AddAgent = () => {
         formDataToSend.append("state", formData.state);
         formDataToSend.append("country", formData.country);
         formDataToSend.append("pincode", formData.pincode);
-  
+
         // Try creating a new agent
         const response = await API.post("/admin/agent", formDataToSend, {
           headers: {
@@ -180,7 +185,7 @@ const AddAgent = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-  
+
         if (response.status === 201) {
           console.log("Agent added successfully:", response.data);
           alert("Agent added successfully");
@@ -189,15 +194,18 @@ const AddAgent = () => {
       }
     } catch (e) {
       console.error("Error in submitting agent:", e);
-      alert(e.error)
+      alert(e.error);
     }
   };
-  
-  
-  
 
+  // File handler
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    if (file && file.size > 3 * 1024 * 1024) {
+      alert("File size exceeds 3 MB");
+      e.target.value = null; // Clear the file input
+      return;
+    }
     setFormData((prev) => ({ ...prev, idProof: file }));
   };
 
@@ -272,7 +280,9 @@ const AddAgent = () => {
             placeholder="Enter phone number"
             required
           />
-          {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+          )}
         </div>
 
         {/* Address */}
