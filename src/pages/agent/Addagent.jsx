@@ -204,22 +204,21 @@ const AddAgent = () => {
     const file = e.target.files[0];
     if (file) {
       // Check file size (3 MB limit)
-      if (file.size > 3 * 1024 * 1024) {
-        alert("File size exceeds 3 MB");
+      if (file.size < 1 * 1024 * 1024) {
+        // Update file information state
+        setFileInfo({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        });
+
+        // Update form data state with the selected file
+        setFormData((prev) => ({ ...prev, idProof: file }));
+      } else {
+        alert("File size exceeds 1 MB");
         e.target.value = null; // Clear the file input
         setFileInfo(null); // Clear the displayed file info
-        return;
       }
-
-      // Update file information state
-      setFileInfo({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      });
-
-      // Update form data state with the selected file
-      setFormData((prev) => ({ ...prev, idProof: file }));
     }
   };
 
