@@ -17,6 +17,7 @@ const AddAgent = () => {
   const location = useLocation();
   const agentData = location.state?.agentData;
   const navigate = useNavigate();
+  const [fileInfo, setFileInfo] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -201,12 +202,25 @@ const AddAgent = () => {
   // File handler
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.size > 3 * 1024 * 1024) {
-      alert("File size exceeds 3 MB");
-      e.target.value = null; // Clear the file input
-      return;
+    if (file) {
+      // Check file size (3 MB limit)
+      if (file.size > 3 * 1024 * 1024) {
+        alert("File size exceeds 3 MB");
+        e.target.value = null; // Clear the file input
+        setFileInfo(null); // Clear the displayed file info
+        return;
+      }
+
+      // Update file information state
+      setFileInfo({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+
+      // Update form data state with the selected file
+      setFormData((prev) => ({ ...prev, idProof: file }));
     }
-    setFormData((prev) => ({ ...prev, idProof: file }));
   };
 
   return (
@@ -402,6 +416,20 @@ const AddAgent = () => {
             onChange={handleFileChange}
             className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
           />
+          {fileInfo && (
+            <div className="mt-3 text-sm text-gray-600">
+              <p>
+                <strong>File Name:</strong> {fileInfo.name}
+              </p>
+              <p>
+                <strong>File Type:</strong> {fileInfo.type}
+              </p>
+              <p>
+                <strong>File Size:</strong> {(fileInfo.size / 1024).toFixed(2)}{" "}
+                KB
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Status */}
