@@ -153,11 +153,7 @@ const AddType = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: Number(value), // Ensures it's a number (0 stays 0)
-    }));
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleTagsChange = (e) => {

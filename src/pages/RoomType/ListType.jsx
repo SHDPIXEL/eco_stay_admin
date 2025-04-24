@@ -33,10 +33,32 @@ const ListType = () => {
             );
           }
 
+          let roomImages = [];
+          try {
+            roomImages = JSON.parse(room.room_images); // ✅ single parse
+          } catch (err) {
+            console.warn(
+              "Failed to parse room_images for room:",
+              room.id,
+              room.room_images
+            );
+          }
+
+          let packageIds = [];
+          try {
+            packageIds = JSON.parse(room.package_ids);
+          } catch (err) {
+            console.warn(
+              "Failed to parse package_ids for room:",
+              room.id,
+              room.package_ids
+            );
+          }
+
           return {
             ...room,
-            room_images: JSON.parse(JSON.parse(room.room_images)), // 👈 double parse here
-            package_ids: JSON.parse(room.package_ids),
+            room_images: roomImages,
+            package_ids: packageIds,
             amenities_show: amenitiesArray.join(", "),
           };
         });
