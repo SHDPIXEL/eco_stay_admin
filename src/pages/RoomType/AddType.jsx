@@ -25,12 +25,12 @@ const AddType = () => {
     room_name: "",
     type: "",
     capacity: "",
-    single_base_price: "",
-    double_base_price: "",
-    triple_base_price: "",
-    single_new_price: "",
-    double_new_price: "",
-    triple_new_price: "",
+    single_base_price: 0,
+    double_base_price: 0,
+    triple_base_price: 0,
+    single_new_price: 0,
+    double_new_price: 0,
+    triple_new_price: 0,
     package_ids: [],
     description: "",
     amenities: [],
@@ -53,6 +53,7 @@ const AddType = () => {
             Authorization: token,
           },
         });
+
         const packages = response.data;
         const formattedPackages = packages.map((pack) => ({
           id: pack.id,
@@ -61,10 +62,17 @@ const AddType = () => {
         setPackage(formattedPackages);
         console.log("Packages fetched successfully:", formattedPackages);
       } catch (error) {
-        console.error(
-          "Error fetching packages:",
-          error.response?.data || error.message
-        );
+        console.error("Error fetching packages:", error);
+
+        // Improved error logging to catch specific details
+        if (error.response) {
+          console.error("Error response data:", error.response.data);
+          console.error("Error response status:", error.response.status);
+        } else if (error.request) {
+          console.error("Error request:", error.request);
+        } else {
+          console.error("Error message:", error.message);
+        }
       }
     };
     fetchPackages();
@@ -90,12 +98,36 @@ const AddType = () => {
         amenities: JSON.parse(roomData.amenities) || [],
         room_images: (() => {
           try {
-            return roomData.room_images ? JSON.parse(roomData.room_images) : [];
+            // If room_images is already an array, return it as is
+            if (Array.isArray(roomData.room_images)) {
+              return roomData.room_images;
+            }
+
+            // Check if room_images is a string and has extra quotes
+            let cleanedRoomImages = roomData.room_images;
+
+            // Ensure it's a string
+            if (typeof cleanedRoomImages === "string") {
+              // Remove extra escape characters or quotes if necessary
+              if (
+                cleanedRoomImages.startsWith('"') &&
+                cleanedRoomImages.endsWith('"')
+              ) {
+                cleanedRoomImages = cleanedRoomImages.slice(1, -1);
+              }
+
+              // Return the parsed array
+              return cleanedRoomImages ? JSON.parse(cleanedRoomImages) : [];
+            }
+
+            // If room_images is not a string or array, return an empty array
+            return [];
           } catch (error) {
             console.error("Error parsing room_images:", error);
             return [];
           }
         })(),
+
         status: roomData.status || "Inactive", // Now directly sets "Active" or "Inactive"
       });
     }
@@ -121,7 +153,11 @@ const AddType = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: Number(value), // Ensures it's a number (0 stays 0)
+    }));
   };
 
   const handleTagsChange = (e) => {
@@ -228,6 +264,19 @@ const AddType = () => {
         return;
       }
 
+      // Add checks to prevent setting prices to negative values or undefined
+      if (
+        singleBasePrice < 0 ||
+        singleNewPrice < 0 ||
+        doubleBasePrice < 0 ||
+        doubleNewPrice < 0 ||
+        tripleBasePrice < 0 ||
+        tripleNewPrice < 0
+      ) {
+        alert("Prices cannot be negative.");
+        return;
+      }
+
       const formDataToSend = new FormData();
 
       if (roomData) {
@@ -253,6 +302,8 @@ const AddType = () => {
           room_images: formData.room_images.filter((img) => !img.file), // Keep only existing images
         };
 
+        console.log("updateed data", updateData);
+
         formDataToSend.append("room_data", JSON.stringify(updateData));
 
         console.log("sdssd", formDataToSend.room_images);
@@ -262,7 +313,11 @@ const AddType = () => {
           }
         });
 
-        console.log("Room data to send", formDataToSend);
+        console.log("Room data to send:");
+        for (let pair of formDataToSend.entries()) {
+          console.log(`${pair[0]}:`, pair[1]);
+        }
+
         const response = await API.put(`/admin/room/${id}`, formDataToSend, {
           headers: {
             Authorization: token,
@@ -610,21 +665,23 @@ const AddType = () => {
             Amenities (Tags)
           </label>
           <div className="flex flex-wrap gap-2">
-            {formData.amenities.map((tag, index) => (
-              <span
-                key={index}
-                className="flex items-center justify-between bg-[#333] text-white text-sm rounded-xl px-3"
-              >
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => handleDeleteTag(index)}
-                  className="ml-2 text-red-400 hover:text-red-500"
+            {Array.isArray(formData.amenities) &&
+              formData.amenities.map((tag, index) => (
+                <span
+                  key={index}
+                  className="flex items-center justify-between bg-[#333] text-white text-sm rounded-xl px-3"
                 >
-                  &times;
-                </button>
-              </span>
-            ))}
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTag(index)}
+                    className="ml-2 text-red-400 hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+
             <input
               type="text"
               name="tags"

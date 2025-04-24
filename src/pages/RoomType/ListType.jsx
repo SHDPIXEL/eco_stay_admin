@@ -13,15 +13,33 @@ const ListType = () => {
     const fetchData = async () => {
       try {
         const response = await API.get("/admin/room");
-        console.log("data",response.data)
+        console.log("data", response.data);
         const parseResponse = response.data;
 
-        const formattedResponse = parseResponse.map((room) => ({
-          ...room,
-          room_images: JSON.parse(room.room_images),
-          package_ids: JSON.parse(room.package_ids),
-          amenities_show: JSON.parse(room.amenities).join(", "),
-        }));
+        const formattedResponse = parseResponse.map((room) => {
+          let amenitiesArray = [];
+          try {
+            const parsedAmenities = JSON.parse(room.amenities);
+            if (Array.isArray(parsedAmenities)) {
+              amenitiesArray = parsedAmenities;
+            } else if (typeof parsedAmenities === "string") {
+              amenitiesArray = [parsedAmenities];
+            }
+          } catch (err) {
+            console.warn(
+              "Failed to parse amenities for room:",
+              room.id,
+              room.amenities
+            );
+          }
+
+          return {
+            ...room,
+            room_images: JSON.parse(JSON.parse(room.room_images)), // 👈 double parse here
+            package_ids: JSON.parse(room.package_ids),
+            amenities_show: amenitiesArray.join(", "),
+          };
+        });
 
         setRoomDetails(formattedResponse);
       } catch (e) {
@@ -53,12 +71,30 @@ const ListType = () => {
     { header: "Image", accessor: "room_images" },
     { header: "Title", accessor: "room_name" },
     // { header: "Capacity", accessor: "capacity" },
-    { header: "Old single occupancy price(INR)", accessor: "single_base_price" },
-    { header: "Offer single occupancy price(INR)", accessor: "single_new_price" },
-    { header: "Old Double occupancy price(INR)", accessor: "double_base_price" },
-    { header: "Offer Double occupancy price(INR)", accessor: "double_new_price" },
-    { header: "Offer Triple occupancy price(INR)", accessor: "triple_base_price" },
-    { header: "Offer Triple occupancy price(INR)", accessor: "triple_new_price" },
+    {
+      header: "Old single occupancy price(INR)",
+      accessor: "single_base_price",
+    },
+    {
+      header: "Offer single occupancy price(INR)",
+      accessor: "single_new_price",
+    },
+    {
+      header: "Old Double occupancy price(INR)",
+      accessor: "double_base_price",
+    },
+    {
+      header: "Offer Double occupancy price(INR)",
+      accessor: "double_new_price",
+    },
+    {
+      header: "Offer Triple occupancy price(INR)",
+      accessor: "triple_base_price",
+    },
+    {
+      header: "Offer Triple occupancy price(INR)",
+      accessor: "triple_new_price",
+    },
     { header: "Tags", accessor: "amenities_show" },
     { header: "Rooms status", accessor: "status" },
   ];
