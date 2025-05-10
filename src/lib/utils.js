@@ -1,8 +1,8 @@
 import axios from "axios";
 
 // Base URL for the API
-//export const BASE_URL = "https://ecostay.viryawildlifetours.com/api"; // Replace with your server's base URL
-export const BASE_URL = "http://192.168.1.5:3030"; // Replace with your server's base URL
+export const BASE_URL = "https://ecostay.viryawildlifetours.com/api"; // Replace with your server's base URL
+//export const BASE_URL = "http://192.168.1.5:3030"; // Replace with your server's base URL
 
 // Create an Axios instance
 const API = axios.create({
