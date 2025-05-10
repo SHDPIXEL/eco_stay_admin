@@ -228,21 +228,16 @@ const renderCellContent = (column, row) => {
     );
   }
 
-  // Handle offers (for offers column)
   if (column.accessor === "offers" && value) {
-    // Parse the value if it's a JSON string
-    let offersArray;
+    let offersArray = [];
+
     try {
-      offersArray = JSON.parse(value);
+      offersArray = typeof value === "string" ? JSON.parse(value) : value;
     } catch (e) {
-      // If parsing fails, log the error or return a default value
-      return <span>Error parsing offers</span>;
+      console.error("Invalid JSON in offers:", value);
     }
 
-    // Join the offers array into a comma-separated string
-    const offerString = offersArray.join(", ");
-
-    return <span className="text-sm">{offerString}</span>;
+    return <span>{offersArray.join(", ")}</span>;
   }
 
   // Handle descriptions

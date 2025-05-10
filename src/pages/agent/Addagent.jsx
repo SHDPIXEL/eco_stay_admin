@@ -53,14 +53,25 @@ const AddAgent = () => {
         country: agentData.country || "",
         pincode: agentData.pincode || "",
       });
-      // Populate roomOffers from string array
-      if (agentData.offers && Array.isArray(agentData.offers)) {
-        const offerMap = {};
-        agentData.offers.forEach((item) => {
-          const [room, price] = item.split(":");
-          offerMap[room] = price;
-        });
-        setRoomOffers(offerMap);
+      // ✅ Properly parse and load offers into roomOffers
+      if (agentData.offers) {
+        let parsedOffers = [];
+        try {
+          parsedOffers = JSON.parse(agentData.offers);
+        } catch (e) {
+          console.warn("Failed to parse offers", agentData.offers);
+        }
+
+        if (Array.isArray(parsedOffers)) {
+          const offerMap = {};
+          parsedOffers.forEach((item) => {
+            const [room, price] = item.split(":");
+            if (room && price) {
+              offerMap[room] = price;
+            }
+          });
+          setRoomOffers(offerMap);
+        }
       }
     }
   }, [agentData]);
@@ -130,7 +141,6 @@ const AddAgent = () => {
       alert("Please select a room and enter a valid offer amount.");
       return;
     }
-    
 
     setRoomOffers((prev) => ({
       ...prev,
@@ -248,7 +258,6 @@ const AddAgent = () => {
           ([room, price]) => `${room}:${price}`
         );
         formDataToSend.append("offers", JSON.stringify(offersArray));
-        
 
         // Try creating a new agent
         const response = await API.post("/admin/agent", formDataToSend, {

@@ -13,6 +13,7 @@ const ListAgent = () => {
     const fetchAgent = async () => {
       try {
         const response = await API.get("/admin/agent");
+        console.log("data",response.data)
         const Data = response.data;
 
         // Log the raw data for debugging
