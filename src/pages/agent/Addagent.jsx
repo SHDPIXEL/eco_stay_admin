@@ -37,44 +37,48 @@ const AddAgent = () => {
     pincode: "",
   });
 
-  useEffect(() => {
-    if (agentData) {
-      setFormData({
-        name: agentData.name || "",
-        email: agentData.email || "",
-        phone: agentData.phone || "",
-        address: agentData.address || "",
-        idProof: agentData.idProof || "",
-        status: agentData.status || "",
-        offers: agentData.offers || "",
-        password: "",
-        city: agentData.city || "",
-        state: agentData.state || "",
-        country: agentData.country || "",
-        pincode: agentData.pincode || "",
-      });
-      // ✅ Properly parse and load offers into roomOffers
-      if (agentData.offers) {
-        let parsedOffers = [];
-        try {
-          parsedOffers = JSON.parse(agentData.offers);
-        } catch (e) {
-          console.warn("Failed to parse offers", agentData.offers);
-        }
+ useEffect(() => {
+  if (agentData) {
+    setFormData({
+      name: agentData.name || "",
+      email: agentData.email || "",
+      phone: agentData.phone || "",
+      address: agentData.address || "",
+      idProof: agentData.idProof || "",
+      status: agentData.status || "",
+      offers: agentData.offers || "",
+      password: "",
+      city: agentData.city || "",
+      state: agentData.state || "",
+      country: agentData.country || "",
+      pincode: agentData.pincode || "",
+    });
 
-        if (Array.isArray(parsedOffers)) {
-          const offerMap = {};
-          parsedOffers.forEach((item) => {
-            const [room, price] = item.split(":");
-            if (room && price) {
-              offerMap[room] = price;
-            }
-          });
-          setRoomOffers(offerMap);
-        }
+    // ✅ Properly parse and load offers into roomOffers
+    let parsedOffers = [];
+
+    if (Array.isArray(agentData.offers)) {
+      parsedOffers = agentData.offers;
+    } else {
+      try {
+        parsedOffers = JSON.parse(agentData.offers);
+      } catch (e) {
+        console.warn("Failed to parse offers", agentData.offers);
       }
     }
-  }, [agentData]);
+
+    if (Array.isArray(parsedOffers)) {
+      const offerMap = {};
+      parsedOffers.forEach((item) => {
+        const [room, price] = item.split(":");
+        if (room && price) {
+          offerMap[room.trim()] = Number(price.trim());
+        }
+      });
+      setRoomOffers(offerMap);
+    }
+  }
+}, [agentData]);
 
   useEffect(() => {
     const fetchRooms = async () => {
