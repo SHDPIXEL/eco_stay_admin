@@ -18,6 +18,10 @@ const AddAgent = () => {
   const agentData = location.state?.agentData;
   const navigate = useNavigate();
   const [fileInfo, setFileInfo] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(""); // for dropdown
+  const [offerAmount, setOfferAmount] = useState(""); // for input
+  const [roomOffers, setRoomOffers] = useState({}); // stores all added offers
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,7 +30,6 @@ const AddAgent = () => {
     address: "",
     idProof: "",
     status: "",
-    offers: "",
     password: "",
     city: "",
     state: "",
@@ -50,8 +53,44 @@ const AddAgent = () => {
         country: agentData.country || "",
         pincode: agentData.pincode || "",
       });
+      // Populate roomOffers from string array
+      if (agentData.offers && Array.isArray(agentData.offers)) {
+        const offerMap = {};
+        agentData.offers.forEach((item) => {
+          const [room, price] = item.split(":");
+          offerMap[room] = price;
+        });
+        setRoomOffers(offerMap);
+      }
     }
   }, [agentData]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          throw new Error("Authorization token is missing");
+        }
+
+        const response = await API.get("/admin/room", {
+          headers: {
+            Authorization: token,
+          },
+        });
+
+        const roomsData = response.data.map((room) => ({
+          id: room.id,
+          room_name: room.room_name,
+        }));
+
+        setRooms(roomsData);
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      }
+    };
+    fetchRooms();
+  }, []);
 
   const [errors, setErrors] = useState({}); // State to store validation errors
 
@@ -77,6 +116,30 @@ const AddAgent = () => {
         });
       }
     }
+  };
+
+  const handleRoomOfferChange = (roomName, value) => {
+    setRoomOffers((prev) => ({
+      ...prev,
+      [roomName]: value,
+    }));
+  };
+
+  const handleAddOffer = () => {
+    if (!selectedRoom || isNaN(offerAmount) || Number(offerAmount) <= 0) {
+      alert("Please select a room and enter a valid offer amount.");
+      return;
+    }
+    
+
+    setRoomOffers((prev) => ({
+      ...prev,
+      [selectedRoom]: offerAmount,
+    }));
+
+    // Clear inputs
+    setSelectedRoom("");
+    setOfferAmount("");
   };
 
   // const handleOffersChange = (e) => {
@@ -125,12 +188,16 @@ const AddAgent = () => {
         formDataToSend.append("phone", formData.phone);
         formDataToSend.append("address", formData.address);
         formDataToSend.append("status", formData.status);
-        formDataToSend.append("offers", formData.offers);
         formDataToSend.append("password", formData.password);
         formDataToSend.append("city", formData.city);
         formDataToSend.append("state", formData.state);
         formDataToSend.append("country", formData.country);
         formDataToSend.append("pincode", formData.pincode);
+
+        const offersArray = Object.entries(roomOffers).map(
+          ([room, price]) => `${room}:${price}`
+        );
+        formDataToSend.append("offers", JSON.stringify(offersArray));
 
         if (formData.idProof && formData.idProof instanceof File) {
           formDataToSend.append("idProof", formData.idProof);
@@ -156,7 +223,7 @@ const AddAgent = () => {
           !formData.address ||
           !formData.idProof ||
           !formData.status ||
-          !formData.offers.trim() ||
+          !Object.keys(roomOffers).length === 0 ||
           !formData.password ||
           !formData.state ||
           !formData.city ||
@@ -172,12 +239,16 @@ const AddAgent = () => {
         formDataToSend.append("address", formData.address);
         formDataToSend.append("idProof", formData.idProof);
         formDataToSend.append("status", formData.status);
-        formDataToSend.append("offers", formData.offers);
         formDataToSend.append("password", formData.password);
         formDataToSend.append("city", formData.city);
         formDataToSend.append("state", formData.state);
         formDataToSend.append("country", formData.country);
         formDataToSend.append("pincode", formData.pincode);
+        const offersArray = Object.entries(roomOffers).map(
+          ([room, price]) => `${room}:${price}`
+        );
+        formDataToSend.append("offers", JSON.stringify(offersArray));
+        
 
         // Try creating a new agent
         const response = await API.post("/admin/agent", formDataToSend, {
@@ -457,23 +528,70 @@ const AddAgent = () => {
         </div>
 
         {/* Offers */}
-        <div className="flex flex-col">
-          <label
-            htmlFor="offers"
-            className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"
-          >
+        <div className="flex flex-col gap-4">
+          <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-gray-400" />
-            Offers
+            Offers per Room
           </label>
-          <input
-            name="offers"
-            id="offers"
-            value={formData.offers}
-            onChange={handleChange}
-            placeholder="Enter Offer"
-            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm appearance-none transition-all duration-200"
-            required
-          />
+
+          <div className="flex gap-3 items-center">
+            <select
+              value={selectedRoom}
+              onChange={(e) => setSelectedRoom(e.target.value)}
+              className="p-2 border border-gray-300 rounded-lg flex-1"
+            >
+              <option value="">Select Room</option>
+              {rooms
+                .filter((r) => !roomOffers[r.room_name]) // avoid duplicates
+                .map((room) => (
+                  <option key={room.id} value={room.room_name}>
+                    {room.room_name}
+                  </option>
+                ))}
+            </select>
+
+            <input
+              type="number"
+              min="0"
+              placeholder="Offer amount"
+              value={offerAmount}
+              onChange={(e) => setOfferAmount(e.target.value)}
+              className="p-2 border border-gray-300 rounded-lg w-32"
+            />
+
+            <button
+              onClick={handleAddOffer}
+              type="button"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Add
+            </button>
+          </div>
+
+          {/* Show current offers */}
+          {Object.entries(roomOffers).map(([room, amount]) => (
+            <div
+              key={room}
+              className="flex justify-between items-center border-b py-2"
+            >
+              <span>
+                {room}: ₹{amount}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setRoomOffers((prev) => {
+                    const updated = { ...prev };
+                    delete updated[room];
+                    return updated;
+                  })
+                }
+                className="text-red-500 text-sm hover:underline"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
         </div>
 
         {/* <div className="flex flex-col">
